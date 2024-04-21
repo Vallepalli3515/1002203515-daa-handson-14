@@ -1,0 +1,114 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+struct Edge {
+    int src, dest, weight;
+};
+
+struct Graph {
+    int V, E;
+    struct Edge* edges;
+};
+
+struct Graph* createGraph(int V, int E) {
+    struct Graph* graph = (struct Graph*)malloc(sizeof(struct Graph));
+    graph->V = V;
+    graph->E = E;
+    graph->edges = (struct Edge*)malloc(E * sizeof(struct Edge));
+    return graph;
+}
+
+int find(int parent[], int i) {
+    if (parent[i] == i)
+        return i;
+    return find(parent, parent[i]);
+}
+
+void Union(int parent[], int rank[], int x, int y) {
+    int xroot = find(parent, x);
+    int yroot = find(parent, y);
+
+    if (rank[xroot] < rank[yroot])
+        parent[xroot] = yroot;
+    else if (rank[xroot] > rank[yroot])
+        parent[yroot] = xroot;
+    else {
+        parent[yroot] = xroot;
+        rank[xroot]++;
+    }
+}
+
+int compareEdges(const void* a, const void* b) {
+    struct Edge* edge1 = (struct Edge*)a;
+    struct Edge* edge2 = (struct Edge*)b;
+    return edge1->weight - edge2->weight;
+}
+
+void kruskalMST(struct Graph* graph) {
+    int V = graph->V;
+    struct Edge result[V];
+    int e = 0;
+    int i = 0;
+
+    qsort(graph->edges, graph->E, sizeof(graph->edges[0]), compareEdges);
+
+    int* parent = (int*)malloc(V * sizeof(int));
+    int* rank = (int*)malloc(V * sizeof(int));
+
+    for (int v = 0; v < V; ++v) {
+        parent[v] = v;
+        rank[v] = 0;
+    }
+
+    while (e < V - 1 && i < graph->E) {
+        struct Edge nextEdge = graph->edges[i++];
+        int x = find(parent, nextEdge.src);
+        int y = find(parent, nextEdge.dest);
+
+        if (x != y) {
+            result[e++] = nextEdge;
+            Union(parent, rank, x, y);
+        }
+    }
+
+    printf("Minimum Spanning Tree edges:\n");
+    for (int i = 0; i < e; ++i) {
+        printf("(%d, %d) with weight %d\n", result[i].src, result[i].dest, result[i].weight);
+    }
+
+    free(parent);
+    free(rank);
+}
+
+int main() {
+    int V = 4; // Number of vertices
+    int E = 5; // Number of edges
+    struct Graph* graph = createGraph(V, E);
+
+    graph->edges[0].src = 0;
+    graph->edges[0].dest = 1;
+    graph->edges[0].weight = 10;
+
+    graph->edges[1].src = 0;
+    graph->edges[1].dest = 2;
+    graph->edges[1].weight = 6;
+
+    graph->edges[2].src = 0;
+    graph->edges[2].dest = 3;
+    graph->edges[2].weight = 5;
+
+    graph->edges[3].src = 1;
+    graph->edges[3].dest = 3;
+    graph->edges[3].weight = 15;
+
+    graph->edges[4].src = 2;
+    graph->edges[4].dest = 3;
+    graph->edges[4].weight = 4;
+
+    kruskalMST(graph);
+
+    free(graph->edges);
+    free(graph);
+
+    return 0;
+}

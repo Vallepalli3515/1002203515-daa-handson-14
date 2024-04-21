@@ -1,0 +1,67 @@
+#include <stdio.h>
+#include <stdbool.h>
+
+#define MAX_VERTICES 100
+
+struct Graph {
+    int vertices;
+    int edges[MAX_VERTICES][MAX_VERTICES];
+};
+
+struct Graph createGraph(int vertices) {
+    struct Graph graph;
+    graph.vertices = vertices;
+    for (int i = 0; i < vertices; i++) {
+        for (int j = 0; j < vertices; j++) {
+            graph.edges[i][j] = 0;
+        }
+    }
+    return graph;
+}
+
+void addEdge(struct Graph *graph, int u, int v) {
+    graph->edges[u][v] = 1;
+}
+
+void topologicalSortUtil(struct Graph *graph, int v, bool visited[], int stack[], int *top) {
+    visited[v] = true;
+    for (int i = 0; i < graph->vertices; i++) {
+        if (graph->edges[v][i] && !visited[i]) {
+            topologicalSortUtil(graph, i, visited, stack, top);
+        }
+    }
+    stack[++(*top)] = v;
+}
+
+void topologicalSort(struct Graph *graph) {
+    bool visited[MAX_VERTICES];
+    for (int i = 0; i < graph->vertices; i++) {
+        visited[i] = false;
+    }
+    int stack[MAX_VERTICES];
+    int top = -1;
+    for (int i = 0; i < graph->vertices; i++) {
+        if (!visited[i]) {
+            topologicalSortUtil(graph, i, visited, stack, &top);
+        }
+    }
+    printf("Topological Sort:");
+    for (int i = top; i >= 0; i--) {
+        printf(" %d", stack[i]);
+    }
+    printf("\n");
+}
+
+int main() {
+    struct Graph g = createGraph(6);
+    addEdge(&g, 5, 2);
+    addEdge(&g, 5, 0);
+    addEdge(&g, 4, 0);
+    addEdge(&g, 4, 1);
+    addEdge(&g, 2, 3);
+    addEdge(&g, 3, 1);
+
+    topologicalSort(&g);
+
+    return 0;
+}

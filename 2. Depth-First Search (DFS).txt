@@ -1,0 +1,68 @@
+#include <stdio.h>
+#include <stdbool.h>
+
+#define MAX_VERTICES 100
+
+struct Graph {
+    int vertices;
+    int edges[MAX_VERTICES][MAX_VERTICES];
+};
+
+struct Graph createGraph() {
+    struct Graph graph;
+    graph.vertices = 0;
+    for (int i = 0; i < MAX_VERTICES; i++) {
+        for (int j = 0; j < MAX_VERTICES; j++) {
+            graph.edges[i][j] = 0;
+        }
+    }
+    return graph;
+}
+
+void addEdge(struct Graph *graph, int u, int v) {
+    if (u >= MAX_VERTICES || v >= MAX_VERTICES) {
+        printf("Error: Vertex out of range.\n");
+        return;
+    }
+    graph->edges[u][v] = 1;
+    if (u > graph->vertices) {
+        graph->vertices = u;
+    }
+    if (v > graph->vertices) {
+        graph->vertices = v;
+    }
+}
+
+void dfsUtil(struct Graph *graph, int v, bool visited[]) {
+    visited[v] = true;
+    printf("%d ", v);
+    for (int i = 0; i <= graph->vertices; i++) {
+        if (graph->edges[v][i] && !visited[i]) {
+            dfsUtil(graph, i, visited);
+        }
+    }
+}
+
+void dfs(struct Graph *graph, int start) {
+    bool visited[MAX_VERTICES];
+    for (int i = 0; i <= graph->vertices; i++) {
+        visited[i] = false;
+    }
+    dfsUtil(graph, start, visited);
+}
+
+int main() {
+    struct Graph g = createGraph();
+    addEdge(&g, 0, 1);
+    addEdge(&g, 0, 2);
+    addEdge(&g, 1, 2);
+    addEdge(&g, 2, 0);
+    addEdge(&g, 2, 3);
+    addEdge(&g, 3, 3);
+
+    printf("DFS from vertex 2: ");
+    dfs(&g, 2);
+    printf("\n");
+
+    return 0;
+}
